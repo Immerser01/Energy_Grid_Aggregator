@@ -181,9 +181,16 @@ func processQueue(serials []string) *AggregatedReport {
 		ticker := time.NewTicker(rateLimit)
 		defer ticker.Stop()
 
+		// Force immediate first execution
+		first := true
+
 		for job := range jobs {
 			// Wait for the next tick to ensure we don't exceed rate limit
-			<-ticker.C
+			// Skip wait only for the very first batch
+			if !first {
+				<-ticker.C
+			}
+			first = false
 
 			log.Printf("Batch %d/%d (%d devices)...", job.ID, numBatches, len(job.Batch))
 
